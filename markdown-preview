@@ -1,0 +1,49 @@
+#!/bin/sh
+#
+# markdown-preview - lightweight Markdown -> HTML preview generator using pandoc + KaTeX
+# 
+# Author: Germain PHAM
+# License: See LICENSE in project root (GNU GPL v3)
+# 
+# Description:
+#   Convert a Markdown file to a standalone HTML preview using pandoc and KaTeX
+#   for math rendering. Optionally accepts a maxwidth value (e.g. "80%" or "36em")
+#   to override pandoc's default max width.
+#
+# Usage:
+#   markdown-preview <markdown-file> [maxwidth]
+#   Example: markdown-preview example.md
+#   Example: markdown-preview example.md "80%"
+#   Example: markdown-preview example.md "36em"
+#
+# Created: 2025-10-15
+# Version: 1.0
+
+# Exit on error
+set -e
+
+# argument 1 is the markdown file to convert - mandatory
+# argument 2 is optional, it is the maxwidth value (as string, e.g. "80%") to be set in the pandoc metadata
+
+if [ -z "$1" ]; then
+    echo "Usage: $(basename $0) <markdown-file> [maxwidth]"
+    echo "Example: $(basename $0) example.md"
+    echo "Example: $(basename $0) example.md \"80%\""
+    echo "Example: $(basename $0) example.md \"36em\""
+    exit 1
+fi
+
+if [ -n "$2" ]; then
+    maxwidth="$2"
+else
+    maxwidth="80%"
+fi
+
+filename=$(basename "$1" .md)
+(
+    printf -- "---\nmaxwidth: %s\n---\n\n" "$maxwidth"
+    cat "$1"
+) | pandoc -s \
+        --katex=https://cdn.jsdelivr.net/npm/katex/dist/ \
+        --output "$filename.html"
+
